@@ -1,16 +1,6 @@
-import numpy as np
 import random as rand
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
 
-# Map Configuration
-map = {
-    "xy":[100, 100],
-    "nodes":[],
-    'seed':None,
-    'choice':[-100, 100]
-}
-
+# Tile types: (probability, id)
 tile_type = {
     "empty": (0.95, 0),
     "rock": (0.015, 7),
@@ -19,15 +9,6 @@ tile_type = {
     "leaf": (0.0, 10),
 }
 
-spread = 3
-
-# Create a seed to make everything random
-def genSeed():
-    seed = map['seed']
-    if seed == None:
-        seed = round(rand.randint(0, 999999) + rand.randint(0, 999999) * 3.145 ** rand.choice(map['choice']))
-    map['seed'] = rand.seed(seed)
-
 # Create each node
 class node:
     def __init__(self, xy):
@@ -35,7 +16,7 @@ class node:
         self.type = None
         self.neighbours = []
         self.processed = False
-    
+
     def createTile(self):
         select_tile = rand.random()
         total_prob = 0
@@ -46,35 +27,35 @@ class node:
                 return
         self.type = "empty", 0
 
-    def createObject(self, n1):
-        if n1.processed:
+    def createObject(self, map_data):
+        if self.processed:
             return
 
-        if n1.type[1] == tile_type["tree"][1]:
+        if self.type[1] == tile_type["tree"][1]:
             formation_coords = [(0, 0), (-1, 0)]
-            self.placeObject(n1, formation_coords, "tree", clear_area=True)
+            self.placeObject(map_data, formation_coords, "tree", clear_area=True)
 
-        elif n1.type[1] == tile_type["rock"][1]:
+        elif self.type[1] == tile_type["rock"][1]:
             formation_coords = [(0, 0), (0, 1), (1, 0), (1, 1)]
-            self.placeObject(n1, formation_coords, "rock", clear_area=True)
+            self.placeObject(map_data, formation_coords, "rock", clear_area=True)
 
-        elif n1.type[1] == tile_type["bush"][1]:
+        elif self.type[1] == tile_type["bush"][1]:
             formation_coords = [(0, 0)]
-            self.placeObject(n1, formation_coords, "bush", clear_area=True)
-            
-    def placeObject(self, n1, formation_coords, object_type, clear_area=False):
+            self.placeObject(map_data, formation_coords, "bush", clear_area=True)
+
+    def placeObject(self, map_data, formation_coords, object_type, clear_area=False):
         object_nodes = []
         for dx, dy in formation_coords:
-            x, y = n1.xy[0] + dx, n1.xy[1] + dy
-            if 0 <= x < map['xy'][0] and 0 <= y < map['xy'][1]:
-                index = x * map['xy'][1] + y
-                n2 = map['nodes'][index]
+            x, y = self.xy[0] + dx, self.xy[1] + dy
+            if 0 <= x < map_data['xy'][0] and 0 <= y < map_data['xy'][1]:
+                index = x * map_data['xy'][1] + y
+                n2 = map_data['nodes'][index]
                 object_nodes.append(n2)
 
         if clear_area:
             surrounding_nodes = []
-            for node in object_nodes:
-                for n in node.neighbours:
+            for obj_node in object_nodes:
+                for n in obj_node.neighbours:
                     if n not in object_nodes:
                         surrounding_nodes.append(n)
 
@@ -83,87 +64,75 @@ class node:
                 n.type = ("empty", 0)
                 n.processed = True
 
-        for node in object_nodes:
-            if object_type == "tree" and node != n1:
-                node.type = ("leaf", 10)
+        for obj_node in object_nodes:
+            if object_type == "tree" and obj_node != self:
+                obj_node.type = ("leaf", 10)
             else:
-                node.type = (object_type, tile_type[object_type][1])
-            node.processed = True
+                obj_node.type = (object_type, tile_type[object_type][1])
+            obj_node.processed = True
 
-        n1.processed = True
+        self.processed = True
 
-# Plot the node on the map
-def genNodes():
-    for i in range(map['xy'][0]):
-        for j in range(map['xy'][1]):
-            map['nodes'].append(node([i, j]))
 
-# Get all node neighbours
-def getNeighbours(spread):
-    tiles = []
-    for n in map['nodes']:
-        tiles.append(n)
-    for n1 in map['nodes']:
-        for n2 in tiles:
-            if n1 != n2:
-                distance = max(abs(n1.xy[0] - n2.xy[0]), abs(n1.xy[1] - n2.xy[1]))
-                if distance <= spread:
-                    n1.neighbours.append(n2)
+class world:
+    def __init__(self, xy=[100, 100], seed=None, spread=3):
+        self.map = {
+            "xy": xy,
+            "nodes": [],
+            "seed": seed,
+            "choice": [-100, 100]
+        }
+        self.spread = spread
 
-# Create the tiles
-def setTile():
-    for n in map['nodes']:
-        n.createTile()
-    
-    for n in map['nodes']:
-        n.createObject(n)
+    # Generate the full world
+    def generate(self):
+        self.genSeed()
+        self.genNodes()
+        self.getNeighbours()
+        #self.genRivers()    #FUTURE FEATURE
+        #self.genMountains() #FUTURE FEATURE
+        self.setTile()
+        self.clearExtras()
 
-# Clear left over tiles
-def clearExtras():
-    for n in map['nodes']:
-        if n.type[1] in [tile_type["tree"][1], tile_type["leaf"][1], tile_type["rock"][1]]:
-            validNeighbour = False
-            for neighbor in n.neighbours:
-                if neighbor.type[1] != tile_type["empty"][1]:
-                    validNeighbour = True
-                    break
-            if not validNeighbour:
-                n.type = ("empty", 0)
+    # Create a seed to make everything random
+    def genSeed(self):
+        seed = self.map['seed']
+        if seed is None:
+            seed = round(rand.randint(0, 999999) + rand.randint(0, 999999) * 3.145 ** rand.choice(self.map['choice']))
+        self.map['seed'] = rand.seed(seed)
 
-# Generate a visual display
-def renderMap():
-    tile_colours = {
-        0: 'green',
-        7: 'grey',
-        8: 'brown',
-        9: 'lightgreen',
-        10: 'darkgreen'
-    }
-    cmap = ListedColormap([tile_colours[key] for key in sorted(tile_colours.keys())])
-    bounds = sorted(tile_colours.keys()) + [max(tile_colours.keys()) + 1]
-    norm = BoundaryNorm(bounds, cmap.N)
-    world = np.matrix(np.full((map["xy"]), tile_type["empty"][1], dtype=int))
+    # Plot the nodes on the map
+    def genNodes(self):
+        for i in range(self.map['xy'][0]):
+            for j in range(self.map['xy'][1]):
+                self.map['nodes'].append(node([i, j]))
 
-    for n in map['nodes']:
-        x, y = n.xy
-        world[x, y] = n.type[1]
-    print(world)
-    plt.imshow(world, cmap=cmap, norm=norm, interpolation="nearest")
-    plt.show()
+    # Get all node neighbours
+    def getNeighbours(self):
+        tiles = list(self.map['nodes'])
+        for n1 in self.map['nodes']:
+            for n2 in tiles:
+                if n1 != n2:
+                    distance = max(abs(n1.xy[0] - n2.xy[0]), abs(n1.xy[1] - n2.xy[1]))
+                    if distance <= self.spread:
+                        n1.neighbours.append(n2)
 
-# Generate
-genSeed()
-genNodes()
-getNeighbours(spread)
-#genRivers() #FUTURE FEATURE
-#genMountains() #FUTURE FEATURE
-setTile()
-clearExtras()
+    # Create the tiles
+    def setTile(self):
+        for n in self.map['nodes']:
+            n.createTile()
+        for n in self.map['nodes']:
+            n.createObject(self.map)
 
-# Text Display
-# for n in map['nodes']:
-#     n_XY = [neighbour.xy for neighbour in  n.neighbours]
-#     print(f"XY: {n.xy}, Tile Type: {n.type}, Neighbours: {n_XY}")
-
-renderMap()
+    # Clear left over tiles
+    def clearExtras(self):
+        for n in self.map['nodes']:
+            if n.type[1] in [tile_type["tree"][1], tile_type["leaf"][1], tile_type["rock"][1]]:
+                validNeighbour = False
+                for neighbor in n.neighbours:
+                    if neighbor.type[1] != tile_type["empty"][1]:
+                        validNeighbour = True
+                        break
+                if not validNeighbour:
+                    n.type = ("empty", 0)
 
