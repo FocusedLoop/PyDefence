@@ -73,7 +73,6 @@ class node:
 
         self.processed = True
 
-
 class world:
     def __init__(self, xy=[100, 100], seed=None, spread=3):
         self.map = {
@@ -136,3 +135,10 @@ class world:
                 if not validNeighbour:
                     n.type = ("empty", 0)
 
+    def validateMove(self, new_x, new_y):
+        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+            index = new_x * self.map['xy'][1] + new_y
+            tile_id = self.map['nodes'][index].type[1]
+            if tile_id == tile_type["empty"][1]:  # Only allow movement on empty tiles
+                return True
+        return False
