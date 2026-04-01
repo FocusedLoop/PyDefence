@@ -4,7 +4,7 @@ from input import inputHandler, player
 import curses
 
 # Initialize the world
-generated_world = world(xy=[100, 100], spread=3)
+generated_world = world(xy=[50, 50], spread=3)
 generated_world.generate()
 
 # Initialize the player and input handler
