@@ -65,7 +65,7 @@ class render:
 
     # Generate a visual display of the world using matplotlib
     # NOTE: DEPRECATED
-    # TODO: REFACTOR INTO MY OWN RENDERING SYSTEM
+    # TODO: REFACTOR INTO MY OWN RENDERING SYSTEM WITH SDL2
     def matplotlib_render(self, map):
         tile_colours = {
             0: 'green',
