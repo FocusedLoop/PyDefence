@@ -1,6 +1,8 @@
+import numpy as np
 import random as rand
 
 # Tile types: (probability, id)
+# TODO: REFACTOR THIS MAGIC NUMBER SHIT INTO A BETTER SYSTEM
 tile_type = {
     "empty": (0.95, 0),
     "rock": (0.015, 7),
@@ -90,7 +92,7 @@ class world:
         self.getNeighbours()
         #self.genRivers()    #FUTURE FEATURE
         #self.genMountains() #FUTURE FEATURE
-        self.setTile()
+        self.genTile()
         self.clearExtras()
 
     # Create a seed to make everything random
@@ -107,6 +109,7 @@ class world:
                 self.map['nodes'].append(node([i, j]))
 
     # Get all node neighbours
+    # TODO: SPEED UP
     def getNeighbours(self):
         tiles = list(self.map['nodes'])
         for n1 in self.map['nodes']:
@@ -115,15 +118,18 @@ class world:
                     distance = max(abs(n1.xy[0] - n2.xy[0]), abs(n1.xy[1] - n2.xy[1]))
                     if distance <= self.spread:
                         n1.neighbours.append(n2)
+        # self.map['nodes']
+        # np.array([])
 
-    # Create the tiles
-    def setTile(self):
+    # Generate the world tiles
+    def genTile(self):
         for n in self.map['nodes']:
             n.createTile()
         for n in self.map['nodes']:
             n.createObject(self.map)
-
+    
     # Clear left over tiles
+    # TODO: SPEED UP
     def clearExtras(self):
         for n in self.map['nodes']:
             if n.type[1] in [tile_type["tree"][1], tile_type["leaf"][1], tile_type["rock"][1]]:
@@ -134,6 +140,22 @@ class world:
                         break
                 if not validNeighbour:
                     n.type = ("empty", 0)
+
+    # Set a tile
+    def setTile(self, new_x, new_y, tile_type):
+        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+            index = new_x * self.map['xy'][1] + new_y
+            self.map['nodes'][index].type = tile_type
+            return [new_x, new_y]
+        return [-1, -1]
+
+    # Clear a set tile
+    def clearTile(self, new_x, new_y):
+        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+            index = new_x * self.map['xy'][1] + new_y
+            self.map['nodes'][index].type = ("empty", 0)
+            return True
+        return False
 
     def validateMove(self, new_x, new_y):
         if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:

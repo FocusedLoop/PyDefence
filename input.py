@@ -1,35 +1,34 @@
-# Handle user input, key bindings, and navigation logic
+# Handle user input, key bindings, and worldInteraction logic
 class inputHandler:
-    def __init__(self, world, player):
+    def __init__(self, world, entity):
         # Process Input and return the corresponding action
-        nav = navigation(world, player)
+        controller = entityController(world, entity)
 
         # TODO: MAY NEED TO CHNAGE TO LAMBDA FUNCTION TO AVOID CALLING THE FUNCTION IMMEDIATELY
         self.key_bindings = {
-            'w': lambda: nav.move('MOVE_UP'),
-            'a': lambda: nav.move('MOVE_LEFT'),
-            's': lambda: nav.move('MOVE_DOWN'),
-            'd': lambda: nav.move('MOVE_RIGHT'),
+            'w': lambda: controller.move('MOVE_UP'),
+            'a': lambda: controller.move('MOVE_LEFT'),
+            's': lambda: controller.move('MOVE_DOWN'),
+            'd': lambda: controller.move('MOVE_RIGHT'),
+            'e': lambda: controller.interact('PLACE'),
+            'r': lambda: controller.interact('REMOVE'),
             'q': lambda: exit()
         }
     
     def handle_input(self, key):
-        if key == ord('q'):
-            exit()
         if key != -1:
             action = self.key_bindings.get(chr(key))
-            if action:
-                action()
+            if action: action()
     
-# Take w(acsess the map) -> matrix of tile types
-class navigation:
-    def __init__(self, world, player):
+# Take w(acsess the map) >> matrix of tile types
+class entityController:
+    def __init__(self, world, entity):
         self.world = world
-        self.player = player
+        self.entity = entity
 
     # Validate the move based on world boundaries and obstacles
     def move(self, direction):
-        x, y = self.player.xy
+        x, y = self.entity.xy
         if direction == 'MOVE_UP':
             new_x, new_y = x - 1, y
         elif direction == 'MOVE_DOWN':
@@ -42,28 +41,25 @@ class navigation:
             return False
 
         if self.world.validateMove(new_x, new_y):
-            map_data = self.world.map
-            # Clear old tile
-            old_index = x * map_data['xy'][1] + y
-            map_data['nodes'][old_index].type = ("empty", 0)
-            # Set new tile
-            new_index = new_x * map_data['xy'][1] + new_y
-            map_data['nodes'][new_index].type = ("player", -1)
-            self.player.xy = [new_x, new_y]
+            self.world.clearTile(x, y)
+            new_pos = self.world.setTile(new_x, new_y, self.entity.type)
+            if new_pos != [-1, -1]:
+                self.entity.xy = new_pos
+
             return True
         return False
-    
-# TODO MOVE BELLOW TO SEPARATE FILES
-class player:
-    def __init__(self, world, xy=[25, 25]):
-        self.type = "player", -1
-        self.xy = xy
-        self.health = 100
-        self.starting_position(world)
-    
-    # Place player on the map at the starting position
-    def starting_position(self, world):
-        map_data = world.map
-        index = self.xy[0] * map_data['xy'][1] + self.xy[1]
-        map_data['nodes'][index].type = self.type
+
+    def interact(self, action):
+        object_x, object_y = self.entity.xy
+
+        # Place a object in front of the player
+        if action == 'PLACE':
+            object_x, object_y = object_x - 1, object_y
+            self.world.setTile(object_x, object_y, ("tree", 8))
         
+        if action == 'REMOVE':
+            object_x, object_y = object_x - 1, object_y
+            self.world.clearTile(object_x, object_y)
+
+
+

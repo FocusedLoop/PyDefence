@@ -1,14 +1,15 @@
 from seed import world
 from render import render
-from input import inputHandler, player
+from input import inputHandler
+from entities import entity
 import curses
 
 # Initialize the world
-generated_world = world(xy=[50, 50], spread=3)
+generated_world = world(xy=[100, 200], spread=3)
 generated_world.generate()
 
 # Initialize the player and input handler
-player_character = player(generated_world)
+player_character = entity(generated_world)
 handler = inputHandler(generated_world, player_character)
 
 def game(stdscr):

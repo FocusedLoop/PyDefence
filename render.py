@@ -20,35 +20,29 @@ class render:
         import curses
         map_data = map.map
 
-        # Init custom RGB colours
+        tile_render = {
+            0:  (133, 545, 133), # empty: forest green
+            7:  (753, 753, 753), # rock: grey
+            8:  (396, 263, 129), # tree: dark brown
+            9:  (196, 804, 196), # bush: lime green
+            10: (0, 392, 0), # leaf: dark green
+
+            1: (1000, 0, 0), # player: red
+        }
+
+        # Initialize color pairs for curses
         if not hasattr(render, '_colors_init'):
             curses.start_color()
             curses.use_default_colors()
-
-            # Define custom colors (id, r, g, b)
-            curses.init_color(10, 133, 545, 133)   # forest green
-            curses.init_color(11, 753, 753, 753)   # grey
-            curses.init_color(12, 396, 263, 129)   # dark brown
-            curses.init_color(13, 196, 804, 196)   # lime green
-            curses.init_color(14, 0,   392, 0)     # dark green
-            curses.init_color(15, 1000, 0,  0)     # red
-
-            # Init pairs (pair_id, fg, bg)
-            curses.init_pair(1, -1, 10)   # empty: forest green
-            curses.init_pair(2, -1, 11)   # rock: grey
-            curses.init_pair(3, -1, 12)   # tree: dark brown
-            curses.init_pair(4, -1, 13)   # bush: lime green
-            curses.init_pair(5, -1, 14)   # leaf: dark green
-            curses.init_pair(6, -1, 15)   # player: red
+            for i, (tile_id, (r, g, b)) in enumerate(tile_render.items(), start=1):
+                curses.init_color(i, r, g, b)
+                curses.init_pair(i, -1, i)
             render._colors_init = True
 
+        # Apply color pairs
         tile_colors = {
-            0:  curses.color_pair(1),
-            7:  curses.color_pair(2),
-            8:  curses.color_pair(3),
-            9:  curses.color_pair(4),
-            10: curses.color_pair(5),
-            -1: curses.color_pair(6),
+            tile_id: curses.color_pair(i)
+            for i, tile_id in enumerate(tile_render, start=1)
         }
 
         max_y, max_x = stdscr.getmaxyx()
