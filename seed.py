@@ -1,4 +1,3 @@
-import numpy as np
 import random as rand
 
 # Tile types: (probability, id)
@@ -109,17 +108,22 @@ class world:
                 self.map['nodes'].append(node([i, j]))
 
     # Get all node neighbours
-    # TODO: SPEED UP
     def getNeighbours(self):
-        tiles = list(self.map['nodes'])
-        for n1 in self.map['nodes']:
-            for n2 in tiles:
-                if n1 != n2:
-                    distance = max(abs(n1.xy[0] - n2.xy[0]), abs(n1.xy[1] - n2.xy[1]))
-                    if distance <= self.spread:
-                        n1.neighbours.append(n2)
-        # self.map['nodes']
-        # np.array([])
+        rows, cols = self.map['xy']
+        nodes = self.map['nodes']
+
+        for n in nodes:
+            x, y = n.xy
+            x_min, x_max = max(0, x - self.spread), min(rows, x + self.spread + 1)
+            y_min, y_max = max(0, y - self.spread), min(cols, y + self.spread + 1)
+
+            for nx in range(x_min, x_max):
+                for ny in range(y_min, y_max):
+                    if nx == x and ny == y:
+                        continue
+                    n.neighbours.append(nodes[nx * cols + ny])
+            
+        
 
     # Generate the world tiles
     def genTile(self):
