@@ -1,6 +1,6 @@
-from seed import world
-from render import render
-from entities import player, enemy
+from src.seed import world
+from src.render import render
+from src.entities import player, enemy
 import curses
 
 # Initialize the world

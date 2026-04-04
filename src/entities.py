@@ -1,5 +1,5 @@
 import random as rand
-from input import entityController, inputHandler
+from .input import entityController, inputHandler
 
 class entity:
     def __init__(self, world, xy=[0, 0], type=("entity", 1)):
