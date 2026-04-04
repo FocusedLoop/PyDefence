@@ -55,12 +55,10 @@ class entityController:
         # Place a object in front of the player
         if action == 'PLACE':
             object_x, object_y = object_x - 1, object_y
-            index = object_x * self.world.map['xy'][1] + object_y # TODO: TURN INTO A METHOD IN THE WORLD CLASS >> CheckTile(x, y)
-            if self.world.map['nodes'][index].type == ("empty", 0):
+            if self.world.CheckTile(object_x, object_y) == ("empty", 0):
                 self.world.setTile(object_x, object_y, ("tree", 8))
         
         if action == 'REMOVE':
             object_x, object_y = object_x - 1, object_y
-            index = object_x * self.world.map['xy'][1] + object_y
-            if self.world.map['nodes'][index].type != ("enemy", 2):
+            if self.world.CheckTile(object_x, object_y) != ("enemy", 2):
                 self.world.clearTile(object_x, object_y)

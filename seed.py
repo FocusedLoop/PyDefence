@@ -83,6 +83,9 @@ class world:
             "choice": [-100, 100]
         }
         self.spread = spread
+    
+    def _withInBoundaries(self, x, y):
+        return 0 <= x < self.map['xy'][0] and 0 <= y < self.map['xy'][1]
 
     # Generate the full world
     def generate(self):
@@ -123,8 +126,6 @@ class world:
                         continue
                     n.neighbours.append(nodes[nx * cols + ny])
             
-        
-
     # Generate the world tiles
     def genTile(self):
         for n in self.map['nodes']:
@@ -147,7 +148,7 @@ class world:
 
     # Set a tile
     def setTile(self, new_x, new_y, tile_type):
-        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+        if self._withInBoundaries(new_x, new_y):
             index = new_x * self.map['xy'][1] + new_y
             self.map['nodes'][index].type = tile_type
             return [new_x, new_y]
@@ -155,14 +156,22 @@ class world:
 
     # Clear a set tile
     def clearTile(self, new_x, new_y):
-        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+        if self._withInBoundaries(new_x, new_y):
             index = new_x * self.map['xy'][1] + new_y
             self.map['nodes'][index].type = ("empty", 0)
             return [new_x, new_y]
         return [-1, -1]
 
+    # Check the type of a tile
+    def CheckTile(self, x, y):
+        if self._withInBoundaries(x, y):
+            index = x * self.map['xy'][1] + y
+            return self.map['nodes'][index].type
+        return None
+
+    # Validate a move based on world boundaries and obstacles
     def validateMove(self, new_x, new_y):
-        if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
+        if self._withInBoundaries(new_x, new_y):
             index = new_x * self.map['xy'][1] + new_y
             tile_id = self.map['nodes'][index].type[1]
             if tile_id == tile_type["empty"][1]:  # Only allow movement on empty tiles
