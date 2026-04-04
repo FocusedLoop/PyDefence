@@ -29,7 +29,7 @@ class enemy(entity, entityController):
         self.state = [
             "TOWARDS_PLAYERS",
             #"RANDOM_MOVE"
-            "OBSTACLE_AVOIDANCE"
+            #"OBSTACLE_AVOIDANCE"
         ] + state
         self.possible_actions = [
             "MOVE_UP",
