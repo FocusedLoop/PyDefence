@@ -27,8 +27,9 @@ class enemy(entity, entityController):
         entityController.__init__(self, world, self)
 
         self.state = [
-            #"TOWARDS_PLAYERS",
-            "RANDOM_MOVE"
+            "TOWARDS_PLAYERS",
+            #"RANDOM_MOVE"
+            "OBSTACLE_AVOIDANCE"
         ] + state
         self.possible_actions = [
             "MOVE_UP",
@@ -47,13 +48,36 @@ class enemy(entity, entityController):
             self.move_towards_player(self.world)
         elif chosen == "RANDOM_MOVE":
             self.random_move(self.world)
+        elif chosen == "OBSTACLE_AVOIDANCE":
+            self.avoid_obstacles(self.world)
     
     # TDOD: FINISH
     def move_towards_player(self, world):
+        player_positions = world.findPlayersPosition()
+        if not player_positions:
+            return
+            
+        player_x, player_y = player_positions[0]  # TODO: HANDLE MULTIPLE PLAYERS
+        enemy_x, enemy_y = self.xy[0] - player_x, self.xy[1] - player_y
+        if abs(enemy_x) > abs(enemy_y):
+            if enemy_x > 0:
+                self.move("MOVE_UP")
+            else:
+                self.move("MOVE_DOWN")
+        else:
+            if enemy_y > 0:
+                self.move("MOVE_LEFT")
+            else:
+                self.move("MOVE_RIGHT")
+    
+    # TODO: COMPLETE, ADD A ACTION QUEUE FOR THE ENEMY
+    # MAYBE STATE QUEUE INSTEAD, NEED A WAY TO POP IT WHEN THE PLAYER HAS MOVED TO A NEW POSITION
+    def avoid_obstacles(self, world):
         pass
-        player_xy = world.map.get(1)
+        # enemy_x, enemy_y = self.xy
 
-        self.xy 
+        # for 
+        # if self.world.CheckTile()
     
     # Randomly move the entity in one of the possible directions
     def random_move(self, world):

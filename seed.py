@@ -168,6 +168,13 @@ class world:
             index = x * self.map['xy'][1] + y
             return self.map['nodes'][index].type
         return None
+    
+    def findPlayersPosition(self):
+        players = []
+        for n in self.map['nodes']:
+            if n.type[0] == "player":
+                players.append(n.xy)
+        return players
 
     # Validate a move based on world boundaries and obstacles
     def validateMove(self, new_x, new_y):
