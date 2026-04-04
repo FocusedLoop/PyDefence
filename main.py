@@ -1,16 +1,15 @@
 from seed import world
 from render import render
-from input import inputHandler
-from entities import entity
+from entities import player, enemy
 import curses
 
 # Initialize the world
 generated_world = world(xy=[200, 200], spread=3)
 generated_world.generate()
 
-# Initialize the player and input handler
-player_character = entity(generated_world)
-handler = inputHandler(generated_world, player_character)
+# Initialize the player and enemy entities
+player = player(generated_world, xy=[25, 25])
+enemy = enemy(generated_world)
 
 def game(stdscr):
     # Setup Rendering
@@ -22,7 +21,8 @@ def game(stdscr):
     # Main Game Loop
     while True:
         key = stdscr.getch()
-        handler.handle_input(key)
+        player.handle_input(key)
+        enemy.brain()
         stdscr.erase()
         display.mode(display, generated_world, stdscr)
         stdscr.refresh()

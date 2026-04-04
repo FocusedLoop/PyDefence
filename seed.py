@@ -158,8 +158,8 @@ class world:
         if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:
             index = new_x * self.map['xy'][1] + new_y
             self.map['nodes'][index].type = ("empty", 0)
-            return True
-        return False
+            return [new_x, new_y]
+        return [-1, -1]
 
     def validateMove(self, new_x, new_y):
         if 0 <= new_x < self.map['xy'][0] and 0 <= new_y < self.map['xy'][1]:

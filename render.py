@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+import curses
 
 class render:
     @staticmethod
@@ -17,7 +18,6 @@ class render:
 
     # Render the world in the terminal using curses
     def terminal_render(self, map, stdscr):
-        import curses
         map_data = map.map
 
         tile_render = {
@@ -27,7 +27,8 @@ class render:
             9:  (196, 804, 196), # bush: lime green
             10: (0, 392, 0), # leaf: dark green
 
-            1: (1000, 0, 0), # player: red
+            1: (0, 0, 1000), # player: blue
+            2: (1000, 0, 0) # enemy: red
         }
 
         # Initialize color pairs for curses
@@ -68,7 +69,8 @@ class render:
             9: 'lightgreen',
             10: 'darkgreen',
 
-            -1: 'red'
+            -1: 'blue',
+            -2: 'red'
         }
         cmap = ListedColormap([tile_colours[key] for key in sorted(tile_colours.keys())])
         bounds = sorted(tile_colours.keys()) + [max(tile_colours.keys()) + 1]
