@@ -156,12 +156,8 @@ class world:
 
     # Clear a set tile
     def clearTile(self, new_x, new_y):
-        if self._withInBoundaries(new_x, new_y):
-            index = new_x * self.map['xy'][1] + new_y
-            self.map['nodes'][index].type = ("empty", 0)
-            return [new_x, new_y]
-        return [-1, -1]
-
+        self.setTile(new_x, new_y, ("empty", 0))
+        
     # Check the type of a tile
     def CheckTile(self, x, y):
         if self._withInBoundaries(x, y):
