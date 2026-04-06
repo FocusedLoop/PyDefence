@@ -18,7 +18,7 @@ def game(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True) # non blocking input
     display = render(mode="terminal")
-    tick_rate = 0.05  # 50ms per tick
+    tick_rate = 0.05
     last_tick = time.time()
 
     # Main Game Loop
@@ -26,10 +26,10 @@ def game(stdscr):
         key = stdscr.getch()
         player.handle_input(key)
 
+        # Update enemy states at a fixed tick rate
         now = time.time()
         if now - last_tick >= tick_rate:
             last_tick = now
-            # Update enemy states
             for enemy in enemies: enemy.brain()
 
         stdscr.erase()
