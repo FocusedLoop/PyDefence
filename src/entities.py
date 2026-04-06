@@ -74,6 +74,8 @@ class enemy(entity, entityController):
     # Avoid obstacles by checking the surrounding tiles and trying to move in a different direction if the path towards the player is blocked.
     def avoid_obstacles(self):
         enemy_x, enemy_y = self.xy
+
+        # TODO MOVE LOGIC CLOSE TO self.state
         opposites = {
             "MOVE_UP": "MOVE_DOWN", 
             "MOVE_DOWN": "MOVE_UP",
@@ -102,8 +104,6 @@ class enemy(entity, entityController):
         if backward and self.move(backward):
             self.last_direction = backward
 
-                
-    
     # Randomly move the entity in one of the possible directions
     def random_move(self):
         chosen = rand.choice(self.possible_actions)
