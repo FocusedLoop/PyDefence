@@ -1,7 +1,8 @@
 from src.seed import world
 from src.render import render
 from src.entities import player
-from src.spawner import spawn_enemies
+from src.properties import game
+
 import curses
 import time
 
@@ -9,11 +10,13 @@ import time
 generated_world = world(xy=[200, 200], spread=3)
 generated_world.generate()
 
-# Initialize the player and enemy entities
+# Initialize the player and game state
 player = player(generated_world, xy=[25, 25])
-enemies = spawn_enemies(generated_world, count=25)
+game = game(generated_world)
 
-def game(stdscr):
+enemies = game.spawn_enmies(count=25)
+
+def game_loop(stdscr):
     # Setup Rendering
     curses.curs_set(0)
     stdscr.nodelay(True) # non blocking input
@@ -36,4 +39,4 @@ def game(stdscr):
         display.mode(display, generated_world, stdscr)
         stdscr.refresh()
 
-curses.wrapper(game)
+curses.wrapper(game_loop)
