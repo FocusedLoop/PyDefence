@@ -3,11 +3,22 @@ from src.entities import enemy
 import random as rand
 
 class game():
-    def __init__(self, world):
+    def __init__(self, world, max_time=2400):
         self.world = world
+        self.max_time = max_time
         self.time = 0
         self.enemies = []
         self.humans = [] # TODO: WILL BE A SUBCLASS OF ENTITY, WITH HEALTH, DAMAGE, AND OTHER PROPERTIESs
+    
+    def pass_time(self):
+        self.time += 1
+        if self.time >= self.max_time:
+            self.time = 0
+            game._set_night(self)
+    
+    # TODO: ADD NIGHT MODE, ENEMIES SPAWN
+    def _set_night(self):
+        pass
     
     def spawn_enmies(self, count=1):
         for _ in range(count):
