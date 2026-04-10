@@ -12,7 +12,7 @@ generated_world.generate()
 
 # Initialize the player and game state
 player = player(generated_world, xy=[25, 25])
-game = game(generated_world)
+game = game(generated_world, 3)
 
 enemies = game.spawn_enmies(count=25)
 
@@ -28,6 +28,7 @@ def game_loop(stdscr):
     while True:
         key = stdscr.getch()
         player.handle_input(key)
+        is_night = game.pass_time()
 
         # Update enemy states at a fixed tick rate
         now = time.time()
@@ -36,7 +37,7 @@ def game_loop(stdscr):
             for enemy in enemies: enemy.brain()
 
         stdscr.erase()
-        display.mode(display, generated_world, stdscr)
+        display.mode(display, generated_world, stdscr, is_night)
         stdscr.refresh()
 
 curses.wrapper(game_loop)

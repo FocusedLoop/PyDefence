@@ -14,11 +14,8 @@ class game():
         self.time += 1
         if self.time >= self.max_time:
             self.time = 0
-            game._set_night(self)
-    
-    # TODO: ADD NIGHT MODE, ENEMIES SPAWN
-    def _set_night(self):
-        pass
+            return True
+        return False
     
     def spawn_enmies(self, count=1):
         for _ in range(count):

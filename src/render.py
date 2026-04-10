@@ -15,9 +15,14 @@ class render:
     
     def __init__(self, mode = "terminal"):
         self.mode = render.render_methods(mode)
+    
+    def set_night(self, tilte_map):
+        for tile_id in tilte_map:
+            tilte_map[tile_id] = tuple(color // 4 for color in tilte_map[tile_id])
+        return tilte_map
 
     # Render the world in the terminal using curses
-    def terminal_render(self, map, stdscr):
+    def terminal_render(self, map, stdscr, night_mode=False):
         map_data = map.map
 
         tile_render = {
@@ -30,6 +35,9 @@ class render:
             1: (0, 0, 1000), # player: blue
             2: (1000, 0, 0) # enemy: red
         }
+
+        if night_mode:
+            tile_render = render.set_night(self, tile_render)
 
         # Initialize color pairs for curses
         if not hasattr(render, '_colors_init'):
