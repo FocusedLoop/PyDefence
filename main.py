@@ -12,11 +12,11 @@ generated_world.generate()
 player = player(generated_world, xy=[25, 25])
 
 events_of_day = [
-    (10, "Dawn", 0.7),
-    (60, "Morning", 0.85),
-    (120, "Afternoon", 1.0),
-    (180, "Evening", 0.5),
-    (240, "Night", 0.25)
+    (1, "Dawn", 0.7),
+    (6, "Morning", 0.85),
+    (12, "Afternoon", 1.0),
+    (18, "Evening", 0.5),
+    (24, "Night", 0.25)
 ]
 game = game(generated_world, events_of_day)
 

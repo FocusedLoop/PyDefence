@@ -19,7 +19,13 @@ class player(entity):
         entity.__init__(self, world, xy, type)
         self.input = inputHandler(world, self)
         self.handle_input = self.input.handle_input
-        
+
+# TODO: MOVE ENEMY STATE AND POSSIBLE ACTIONS TO ENTITY
+class humans(entity, entityController):
+    def __init__(self, world, xy=[0, 0], state = [], actions = [], type=("human", 3)):
+        entity.__init__(self, world, xy, type)
+        entityController.__init__(self, world, self)
+
 
 class enemy(entity, entityController):
     def __init__(self, world, xy=[0, 0], state = [], actions = [], type=("enemy", 2)):
