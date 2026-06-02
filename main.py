@@ -5,7 +5,7 @@ from src.properties import game
 import curses, time
 
 # Initialize the world
-generated_world = world(xy=[200, 200], spread=3)
+generated_world = world(xy=[100, 100], spread=3)
 generated_world.generate()
 
 # Initialize the player and game state

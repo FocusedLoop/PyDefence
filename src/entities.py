@@ -14,17 +14,56 @@ class entity:
         index = self.xy[0] * map_data['xy'][1] + self.xy[1]
         map_data['nodes'][index].type = self.type
 
+
 class player(entity):
     def __init__(self, world, xy=[0, 0], type=("player", 1)):
         entity.__init__(self, world, xy, type)
         self.input = inputHandler(world, self)
         self.handle_input = self.input.handle_input
 
-# TODO: MOVE ENEMY STATE AND POSSIBLE ACTIONS TO ENTITY
+
 class humans(entity, entityController):
-    def __init__(self, world, xy=[0, 0], state = [], actions = [], type=("human", 3)):
-        entity.__init__(self, world, xy, type)
+    def __init__(self, world, xy=[0, 0]):
+        entity.__init__(self, world, xy, type=("human", 3))
         entityController.__init__(self, world, self)
+
+        self.possible_actions = [
+            "MOVE_UP",
+            "MOVE_DOWN",
+            "MOVE_LEFT",
+            "MOVE_RIGHT",
+        ]
+        
+        self.task_queue = []
+        self.state = "IDLE"
+    
+    def brain(self):
+        if self.state == "IDLE":
+            pass
+        elif self.state == "WONDER":
+            self.random_move()
+        elif self.state == "TASK":
+            if self.task_queue:
+                task = self.task_queue.pop(0)
+                self.perform_task(task)
+            else:
+                self.state = "IDLE"
+
+
+    def add_task(self, task):
+        self.task_queue.append(task)
+    
+    # Randomly move the entity in one of the possible directions
+    def random_move(self):
+        chosen = rand.choice(self.possible_actions)
+        self.move(chosen)
+
+    def perform_task(self, task):
+        pass
+        # Find task position from relivant position
+        # Once at task position, perform task and remove from queue
+        
+
 
 
 class enemy(entity, entityController):
@@ -36,9 +75,9 @@ class enemy(entity, entityController):
             ("TOWARDS_PLAYERS", 0.65),
             ("OBSTACLE_AVOIDANCE", 0.2),
             ("RANDOM_MOVE", 0.15)
-            
         ] + state
         self.last_direction = None
+        # TODO: MAYBE REMOVE POSSIBLE ACTIONS
         self.possible_actions = [
             "MOVE_UP",
             "MOVE_DOWN",

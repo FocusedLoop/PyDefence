@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import curses
+import curses, time
 
 class render:
     @staticmethod
@@ -26,7 +26,25 @@ class render:
             2: (1000, 0, 0) # enemy: red
         }
         self.tile_render = self.default_colors.copy()
-        self._colors_dirty = True
+        self.colors_dirty = True
+
+        # Performance metrics
+        self.last_time = 0
+        self.fps = 0
+    
+    # Display Frame Rate and CPU Usage
+    def _performance_metrics(self, stdscr, row):
+        if self.mode == render.matplotlib_render:
+            return
+
+        max_y, max_x = stdscr.getmaxyx()
+        if row >= max_y: return
+        try:
+            stdscr.addstr(row, 0, f"FPS: {self.fps:5.1f}".ljust(max_x - 1))
+        except curses.error:
+            pass
+        
+
 
     # Adjust tile colors by a factor
     def set_brightness(self, color_factor):
@@ -34,23 +52,31 @@ class render:
             self.tile_render[tile_id] = tuple(
                 min(int(color * color_factor), 1000) for color in self.default_colors[tile_id]
             )
-        self._colors_dirty = True
+        self.colors_dirty = True
 
     # Render the world in the terminal using curses
     def terminal_render(self, map, stdscr):
+        # Update FPS
+        now = time.perf_counter()
+        if self.last_time > 0:
+            dt = now - self.last_time
+            if dt > 0: self.fps = 0.9 * self.fps + 0.1 * (1.0 / dt)
+        self.last_time = now
+
+        # Get map data
         map_data = map.map
 
-        # Initialize color pairs for curses
+        # Initialize color pairs for curses``
         if not hasattr(render, '_colors_init'):
             curses.start_color()
             curses.use_default_colors()
             render._colors_init = True
 
-        if self._colors_dirty:
+        if self.colors_dirty:
             for i, (tile_id, (r, g, b)) in enumerate(self.tile_render.items(), start=1):
                 curses.init_color(i, r, g, b)
                 curses.init_pair(i, -1, i)
-            self._colors_dirty = False
+            self.colors_dirty = False
 
         # Apply color pairs
         tile_colors = {
@@ -59,16 +85,23 @@ class render:
         }
 
         # Render the map
-        max_y, max_x = stdscr.getmaxyx()
-        for x in range(min(map_data['xy'][0], max_y)):
-            for y in range(min(map_data['xy'][1], max_x // 2)):
-                index = x * map_data['xy'][1] + y
+        max_y, max_x = stdscr.getmaxyx() # Maximize the terminal window for renderings
+
+        height = min(map_data['xy'][1], max_y)
+        width = min(map_data['xy'][0], max_x // 2) # Each tile is 2 characters wide
+        for y in range(height):
+            for x in range(width):
+                index = y * map_data['xy'][1] + x
                 tile_id = map_data['nodes'][index].type[1]
                 color = tile_colors.get(tile_id, curses.color_pair(0))
+
                 try:
-                    stdscr.addstr(x, y * 2, '  ', color)
+                    stdscr.addstr(y, x * 2, '  ', color)
                 except curses.error:
                     pass
+
+        # Draw metrics in the reserved bottom rows
+        self._performance_metrics(stdscr, height)
 
     # Generate a visual display of the world using matplotlib
     # NOTE: DEPRECATED
