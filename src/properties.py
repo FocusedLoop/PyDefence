@@ -1,5 +1,6 @@
 from src.seed import world
 from src.entities import enemy
+from src import debug
 import random as rand
 
 class game():
@@ -15,6 +16,11 @@ class game():
     def pass_time(self, tick_rate=0.05):
         self.time += tick_rate / self.seconds_per_hour
         next_event = self.events_of_day[self.event_index]
+
+        # debug.watch("time", round(self.time, 2))
+        # debug.watch("event", next_event[2])
+        # debug.watch("enemies", len(self.enemies))
+
         if self.time >= next_event[0]:
             self.event_index += 1
             if self.event_index >= len(self.events_of_day):

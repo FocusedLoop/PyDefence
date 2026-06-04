@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import curses, time
+from src import debug
 
 class render:
     @staticmethod
@@ -30,14 +31,20 @@ class render:
         self.fps = 0
     
     # Display Frame Rate and CPU Usage
-    def _performance_metrics(self, stdscr, row):
-        if self.mode == render.matplotlib_render:
-            return
+    def _display_text(self, stdscr, row, debug_info=None):
+        if self.mode == render.matplotlib_render: return
+
+        # Pull from the global debug registry when nothing was passed explicitly
+        if debug_info is None: debug_info = debug.stored_values()
 
         max_y, max_x = stdscr.getmaxyx()
         if row >= max_y: return
+
+        # Display FPS and if debug_info is provided, display that as well
+        text = f"FPS: {self.fps:5.1f}"
+        if debug_info: text += " | " + " | ".join(f"{key}: {value}" for key, value in debug_info.items())
         try:
-            stdscr.addstr(row, 0, f"FPS: {self.fps:5.1f}".ljust(max_x - 1))
+            stdscr.addstr(row, 0, text.ljust(max_x - 1))
         except curses.error:
             pass
     
@@ -49,7 +56,6 @@ class render:
             self.fps = 0.9 * self.fps + 0.1 * (1.0 / delta)
         last_frame = frame_now
         return last_frame
-
 
     # Adjust tile colors by a factor
     def set_brightness(self, color_factor):
@@ -64,7 +70,7 @@ class render:
         # Get map data
         map_data = map.map
 
-        # Initialize color pairs for curses``
+        # Initialize color pairs for curses
         if not hasattr(render, '_colors_init'):
             curses.start_color()
             curses.use_default_colors()
@@ -99,7 +105,7 @@ class render:
                     pass
 
         # Draw metrics in the reserved bottom rows
-        self._performance_metrics(stdscr, height)
+        self._display_text(stdscr, height)
 
     # Generate a visual display of the world using matplotlib
     # NOTE: DEPRECATED

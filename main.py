@@ -9,21 +9,27 @@ generated_world = world(xy=[100, 100], spread=3)
 generated_world.generate()
 
 # Initialize the player and game state
-player = player(generated_world, xy=[25, 25])
+player = player(
+    generated_world, 
+    xy=[25, 25]
+)
 
-events_of_day = [
-    # Hour, Event Name, Brightness Factor
-    (1, "Dawn", 0.7),
-    (6, "Morning", 0.85),
-    (12, "Afternoon", 1.0),
-    (18, "Evening", 0.5),
-    (24, "Night", 0.25)
-]
+game = game(
+    generated_world, 
+    events_of_day = [
+        # Hour, Brightness, Event Name
+        (1,     0.7,        "Dawn"),
+        (6,     0.85,       "Morning"),
+        (12,    1.0,        "Afternoon"),
+        (18,    0.5,        "Evening"),
+        (24,    0.25,       "Night")
+    ], 
+    seconds_per_hour=10
+)
 
-game = game(generated_world, events_of_day, seconds_per_hour=10)
+enemies = game.spawn_enmies(count=1000)
 
-enemies = game.spawn_enmies(count=300)
-
+# Maain Game Loop
 def game_loop(stdscr):
     # Setup Rendering
     curses.curs_set(0)
@@ -33,7 +39,7 @@ def game_loop(stdscr):
     last_tick = time.time()
     last_frame = time.perf_counter()
 
-    display.set_brightness(events_of_day[0][2]) # Dawn brightness
+    display.set_brightness(game.events_of_day[0][1]) # Dawn brightness
 
     # Main Game Loop
     while True:
@@ -46,7 +52,7 @@ def game_loop(stdscr):
             last_tick = now
             event = game.pass_time(tick_rate)
             if event:
-                display.set_brightness(event[2])
+                display.set_brightness(event[1])
             for enemy in enemies: enemy.brain()
 
         last_frame = display.fps_counter(last_frame)
