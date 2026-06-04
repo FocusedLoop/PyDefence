@@ -12,15 +12,17 @@ generated_world.generate()
 player = player(generated_world, xy=[25, 25])
 
 events_of_day = [
+    # Hour, Event Name, Brightness Factor
     (1, "Dawn", 0.7),
     (6, "Morning", 0.85),
     (12, "Afternoon", 1.0),
     (18, "Evening", 0.5),
     (24, "Night", 0.25)
 ]
-game = game(generated_world, events_of_day)
 
-enemies = game.spawn_enmies(count=25)
+game = game(generated_world, events_of_day, seconds_per_hour=10)
+
+enemies = game.spawn_enmies(count=300)
 
 def game_loop(stdscr):
     # Setup Rendering
@@ -29,6 +31,7 @@ def game_loop(stdscr):
     display = render(mode="terminal")
     tick_rate = 0.05
     last_tick = time.time()
+    last_frame = time.perf_counter()
 
     display.set_brightness(events_of_day[0][2]) # Dawn brightness
 
@@ -45,6 +48,8 @@ def game_loop(stdscr):
             if event:
                 display.set_brightness(event[2])
             for enemy in enemies: enemy.brain()
+
+        last_frame = display.fps_counter(last_frame)
 
         stdscr.erase()
         display.mode(display, generated_world, stdscr)

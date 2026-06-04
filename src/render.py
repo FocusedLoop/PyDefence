@@ -27,9 +27,6 @@ class render:
         }
         self.tile_render = self.default_colors.copy()
         self.colors_dirty = True
-
-        # Performance metrics
-        self.last_time = 0
         self.fps = 0
     
     # Display Frame Rate and CPU Usage
@@ -43,7 +40,15 @@ class render:
             stdscr.addstr(row, 0, f"FPS: {self.fps:5.1f}".ljust(max_x - 1))
         except curses.error:
             pass
-        
+    
+    # Calculate FPS using an exponential moving average to smooth out fluctuations
+    def fps_counter(self, last_frame):
+        frame_now = time.perf_counter()
+        delta = frame_now - last_frame
+        if delta > 0:
+            self.fps = 0.9 * self.fps + 0.1 * (1.0 / delta)
+        last_frame = frame_now
+        return last_frame
 
 
     # Adjust tile colors by a factor
@@ -56,13 +61,6 @@ class render:
 
     # Render the world in the terminal using curses
     def terminal_render(self, map, stdscr):
-        # Update FPS
-        now = time.perf_counter()
-        if self.last_time > 0:
-            dt = now - self.last_time
-            if dt > 0: self.fps = 0.9 * self.fps + 0.1 * (1.0 / dt)
-        self.last_time = now
-
         # Get map data
         map_data = map.map
 
@@ -127,3 +125,27 @@ class render:
             world[x, y] = n.type[1]
         plt.imshow(world, cmap=cmap, norm=norm, interpolation="nearest")
         plt.show()
+
+
+
+# TODO: GO OVER AND IMPLEMENT
+# import os, time
+
+# def _read_proc_times():
+#     with open(f"/proc/{os.getpid()}/stat") as f:
+#         fields = f.read().split()
+#     # fields 13/14 (1-indexed) are utime/stime in clock ticks
+#     return (int(fields[13]) + int(fields[14])) / os.sysconf("SC_CLK_TCK")
+
+# # in __init__
+# self._cpu_t0 = _read_proc_times()
+# self._cpu_wall0 = time.perf_counter()
+
+# # in _performance_metrics
+# t1 = _read_proc_times()
+# w1 = time.perf_counter()
+# dt_cpu = t1 - self._cpu_t0
+# dt_wall = w1 - self._cpu_wall0
+# if dt_wall > 0:
+#     self.cpu = 100.0 * dt_cpu / dt_wall
+# self._cpu_t0, self._cpu_wall0 = t1, w1
