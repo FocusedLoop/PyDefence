@@ -24,7 +24,8 @@ class render:
             10: (0, 392, 0), # leaf: dark green
 
             1: (0, 0, 1000), # player: blue
-            2: (1000, 0, 0) # enemy: red
+            2: (1000, 0, 0), # enemy: red
+            3: (1000, 1000, 0) # human: yellow
         }
         self.tile_render = self.default_colors.copy()
         self.colors_dirty = True

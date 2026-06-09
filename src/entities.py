@@ -13,6 +13,11 @@ class entity:
         map_data = world.map
         index = self.xy[0] * map_data['xy'][1] + self.xy[1]
         map_data['nodes'][index].type = self.type
+    
+
+    def random_move(self):
+        chosen = rand.choice(self.possible_actions)
+        self.move(chosen)
 
 
 class player(entity):
@@ -23,9 +28,14 @@ class player(entity):
 
 
 class humans(entity, entityController):
-    def __init__(self, world, xy=[0, 0]):
-        entity.__init__(self, world, xy, type=("human", 3))
+    def __init__(self, world, xy=[0, 0], type=("human", 3)):
+        entity.__init__(self, world, xy, type)
         entityController.__init__(self, world, self)
+
+        self.state = [
+            ("IDLE", 0.65),
+            ("WONDER", 0.35)
+        ]
 
         self.possible_actions = [
             "MOVE_UP",
@@ -35,28 +45,23 @@ class humans(entity, entityController):
         ]
         
         self.task_queue = []
-        self.state = "IDLE"
     
     def brain(self):
-        if self.state == "IDLE":
+        states, weights = zip(*self.state)
+        chosen = rand.choices(states, weights)[0]
+        if chosen == "IDLE":
             pass
-        elif self.state == "WONDER":
+        elif chosen == "WONDER":
             self.random_move()
-        elif self.state == "TASK":
-            if self.task_queue:
-                task = self.task_queue.pop(0)
-                self.perform_task(task)
-            else:
-                self.state = "IDLE"
-
+        # elif chosen == "TASK":
+        #     if self.task_queue:
+        #         task = self.task_queue.pop(0)
+        #         self.perform_task(task)
+        #     else:
+        #         self.state = "IDLE"
 
     def add_task(self, task):
         self.task_queue.append(task)
-    
-    # Randomly move the entity in one of the possible directions
-    def random_move(self):
-        chosen = rand.choice(self.possible_actions)
-        self.move(chosen)
 
     def perform_task(self, task):
         pass
@@ -65,9 +70,8 @@ class humans(entity, entityController):
         
 
 
-
 class enemy(entity, entityController):
-    def __init__(self, world, xy=[0, 0], state = [], actions = [], type=("enemy", 2)):
+    def __init__(self, world, xy=[0, 0], type=("enemy", 2)):
         entity.__init__(self, world, xy, type)
         entityController.__init__(self, world, self)
 
@@ -75,15 +79,16 @@ class enemy(entity, entityController):
             ("TOWARDS_PLAYERS", 0.65),
             ("OBSTACLE_AVOIDANCE", 0.2),
             ("RANDOM_MOVE", 0.15)
-        ] + state
+        ]
         self.last_direction = None
+
         # TODO: MAYBE REMOVE POSSIBLE ACTIONS
         self.possible_actions = [
             "MOVE_UP",
             "MOVE_DOWN",
             "MOVE_LEFT",
             "MOVE_RIGHT",
-        ] + actions
+        ]
     
     # State the actions of the entity
     # TODO: IMRPOVE AI CHOICE MAKING, SPERATE CLASS WITH STACK OF ACTIONS AND PROBABILITIES
@@ -148,9 +153,3 @@ class enemy(entity, entityController):
         backward = opposites.get(self.last_direction)
         if backward and self.move(backward):
             self.last_direction = backward
-
-    # Randomly move the entity in one of the possible directions
-    def random_move(self):
-        chosen = rand.choice(self.possible_actions)
-        self.move(chosen)
-
