@@ -1,11 +1,12 @@
 from src.seed import world
-from src.entities import enemy, humans
+from src.entities import enemy, human
 from src import debug
 import random as rand
 import time
 
 class game():
     def __init__(self, world, events_of_day, world_events, tick_rate=0.05, seconds_per_hour=1.0):
+        tasks.__init__(self)
         self.world = world
         self.events_of_day = sorted(events_of_day)
         self.world_events = world_events
@@ -69,7 +70,36 @@ class game():
                 new_enemy = enemy(self.world, spawn)
                 self.enemies += [new_enemy]
             elif entity == "human":
-                new_human = humans(self.world, spawn)
+                new_human = human(self.world, spawn)
                 self.humans += [new_human]
 
         return self.enemies if entity == "enemy" else self.humans
+    
+    def perform_task(self, task):
+        actions = {
+            "BUILD": self.build,
+            "DESTROY": self.destroy,
+        }
+        action = actions.get(task)
+        if action: action()
+
+
+
+
+# Hanldes performing tasks and gow to complete the tasks
+# Chose a human from the self.humans list and pass task action into perform_task?
+class tasks:
+    def __init__(self):
+        pass
+        
+    def _get_human_location(self):
+        pass
+
+    def _assign_human(self):
+        pass
+    
+    def build(self):
+        pass
+    
+    def destroy(self):
+        pass

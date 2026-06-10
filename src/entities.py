@@ -27,7 +27,7 @@ class player(entity):
         self.handle_input = self.input.handle_input
 
 
-class humans(entity, entityController):
+class human(entity, entityController):
     def __init__(self, world, xy=[0, 0], type=("human", 3)):
         entity.__init__(self, world, xy, type)
         entityController.__init__(self, world, self)
@@ -53,22 +53,20 @@ class humans(entity, entityController):
             pass
         elif chosen == "WONDER":
             self.random_move()
-        # elif chosen == "TASK":
-        #     if self.task_queue:
-        #         task = self.task_queue.pop(0)
-        #         self.perform_task(task)
-        #     else:
-        #         self.state = "IDLE"
+        elif chosen == "TASK":
+            if self.task_queue:
+                task = self.task_queue.pop(0)
+                self.perform_task(task)
+            else:
+                self.state = "IDLE"
 
     def add_task(self, task):
         self.task_queue.append(task)
 
-    def perform_task(self, task):
+    # Find task position from relivant position
+    # Once at task position, perform task and remove from queue
+    def perform_task(self):
         pass
-        # Find task position from relivant position
-        # Once at task position, perform task and remove from queue
-        
-
 
 class enemy(entity, entityController):
     def __init__(self, world, xy=[0, 0], type=("enemy", 2)):

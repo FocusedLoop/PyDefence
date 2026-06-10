@@ -159,7 +159,7 @@ class world:
         self.setTile(new_x, new_y, ("empty", 0))
         
     # Check the type of a tile
-    def CheckTile(self, x, y):
+    def checkTile(self, x, y):
         if self._withInBoundaries(x, y):
             index = x * self.map['xy'][1] + y
             return self.map['nodes'][index].type
