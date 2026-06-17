@@ -165,6 +165,7 @@ class world:
             return self.map['nodes'][index].type
         return None
     
+    # Find Entity Positions
     def findPlayersPosition(self):
         players = []
         for n in self.map['nodes']:

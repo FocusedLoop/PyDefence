@@ -8,14 +8,9 @@ import curses, time
 generated_world = world(xy=[100, 100], spread=3)
 generated_world.generate()
 
-# Initialize the player and game state
-player = player(
-    generated_world, 
-    xy=[25, 25]
-)
-
-game = game(
-    generated_world, 
+# Initialize the game state and player
+current_game = game(
+    world = generated_world, 
     events_of_day = [
         # Hour, Brightness, Event Name
         (1,     0.7,        "DAWN"),
@@ -26,17 +21,28 @@ game = game(
     ],
     world_events = [
         # Chance, Event Name
-        (80,    "PEACE"),
+        (80.09,    "PEACE"),
         (0.005, "RAID"),
-        (0.01,  "FLASH_STORM"),
+        (0.005,  "FLASH_STORM"),
     ],
     tick_rate=0.05,
     seconds_per_hour=2
 )
 
-game.spawn_entities(entity="human", count=1)
+current_player = player(
+    world = generated_world,
+    game = current_game,
+    xy = [25, 25]
+)
 
-# Maain Game Loop
+
+
+current_game.spawn_entities(entity="human", count=2)
+
+# TODO: ADD TPS Counter
+# TODO: MOVE select_world_event into tick rate
+
+# Main Game Loop
 def game_loop(stdscr):
     # Setup Rendering
     curses.curs_set(0)
@@ -44,14 +50,14 @@ def game_loop(stdscr):
     display = render(mode="terminal")
     last_frame = time.perf_counter()
 
-    display.set_brightness(game.events_of_day[0][1]) # Dawn brightness
+    display.set_brightness(current_game.events_of_day[0][1]) # Dawn brightness
 
     # Main Game Loop
     while True:
         key = stdscr.getch()
-        player.handle_input(key)        
-        game.game_tick(display)
-        game.select_world_event()
+        current_player.handle_input(key)        
+        current_game.game_tick(display)
+        current_game.select_world_event()
         last_frame = display.fps_counter(last_frame)
 
         stdscr.erase()

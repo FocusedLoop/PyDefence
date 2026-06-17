@@ -1,8 +1,8 @@
 # Handle user input, key bindings, and worldInteraction logic
 class inputHandler:
-    def __init__(self, world, entity):
+    def __init__(self, world, game, entity):
         # Process Input and return the corresponding action
-        controller = entityController(world, entity)
+        controller = entityController(world, game, entity)
 
         # TODO: MAY NEED TO CHNAGE TO LAMBDA FUNCTION TO AVOID CALLING THE FUNCTION IMMEDIATELY
         self.key_bindings = {
@@ -12,6 +12,7 @@ class inputHandler:
             'd': lambda: controller.move('MOVE_RIGHT'),
             'e': lambda: controller.interact('PLACE'),
             'r': lambda: controller.interact('REMOVE'),
+            't': lambda: controller.interact('TASK'),
             'q': lambda: exit()
         }
     
@@ -22,8 +23,9 @@ class inputHandler:
     
 # Take w(acsess the map) >> matrix of tile types
 class entityController:
-    def __init__(self, world, entity):
+    def __init__(self, world, game, entity):
         self.world = world
+        self.game = game
         self.entity = entity
 
     # Validate the move based on world boundaries and obstacles
@@ -55,10 +57,13 @@ class entityController:
         # Place a object in front of the player
         if action == 'PLACE':
             object_x, object_y = object_x - 1, object_y
-            if self.world.CheckTile(object_x, object_y) == ("empty", 0):
+            if self.world.checkTile(object_x, object_y) == ("empty", 0):
                 self.world.setTile(object_x, object_y, ("tree", 8))
         
         if action == 'REMOVE':
             object_x, object_y = object_x - 1, object_y
-            if self.world.CheckTile(object_x, object_y) != ("enemy", 2):
+            if self.world.checkTile(object_x, object_y) != ("enemy", 2):
                 self.world.clearTile(object_x, object_y)
+        
+        if action == 'TASK':
+            self.game.add_task_to_global_queue("BUILD")

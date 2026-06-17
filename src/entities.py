@@ -1,4 +1,5 @@
 import random as rand
+from src import debug
 from .input import entityController, inputHandler
 
 class entity:
@@ -21,20 +22,21 @@ class entity:
 
 
 class player(entity):
-    def __init__(self, world, xy=[0, 0], type=("player", 1)):
+    def __init__(self, world, game, xy=[0, 0], type=("player", 1)):
         entity.__init__(self, world, xy, type)
-        self.input = inputHandler(world, self)
+        self.input = inputHandler(world, game, self)
         self.handle_input = self.input.handle_input
 
 
 class human(entity, entityController):
-    def __init__(self, world, xy=[0, 0], type=("human", 3)):
+    def __init__(self, world, game, xy=[0, 0], type=("human", 3)):
         entity.__init__(self, world, xy, type)
-        entityController.__init__(self, world, self)
+        entityController.__init__(self, world, game, self)
 
         self.state = [
-            ("IDLE", 0.65),
-            ("WONDER", 0.35)
+            ("IDLE", 0.35),
+            ("WONDER", 0.45),
+            ("TASK", 0.1)
         ]
 
         self.possible_actions = [
@@ -44,7 +46,7 @@ class human(entity, entityController):
             "MOVE_RIGHT",
         ]
         
-        self.task_queue = []
+        self.internal_task_queue = []
     
     def brain(self):
         states, weights = zip(*self.state)
@@ -54,24 +56,18 @@ class human(entity, entityController):
         elif chosen == "WONDER":
             self.random_move()
         elif chosen == "TASK":
-            if self.task_queue:
-                task = self.task_queue.pop(0)
-                self.perform_task(task)
-            else:
-                self.state = "IDLE"
+            if self.internal_task_queue:
+                task = self.internal_task_queue.pop(0)
+                self.game.perform_task(task, self)
 
     def add_task(self, task):
-        self.task_queue.append(task)
-
-    # Find task position from relivant position
-    # Once at task position, perform task and remove from queue
-    def perform_task(self):
-        pass
+        self.internal_task_queue.append(task)
+        debug.watch(f"Internal Human Queue ({self})", self.internal_task_queue)
 
 class enemy(entity, entityController):
-    def __init__(self, world, xy=[0, 0], type=("enemy", 2)):
+    def __init__(self, world, game, xy=[0, 0], type=("enemy", 2)):
         entity.__init__(self, world, xy, type)
-        entityController.__init__(self, world, self)
+        entityController.__init__(self, world, game, self)
 
         self.state = [
             ("TOWARDS_PLAYERS", 0.65),
@@ -142,7 +138,7 @@ class enemy(entity, entityController):
         for dir, (nx, ny) in directions.items():
             if dir == opposites.get(self.last_direction):
                 continue
-            if self.world.CheckTile(nx, ny) in [("empty", 0), ("player", 1)]:
+            if self.world.checkTile(nx, ny) in [("empty", 0), ("player", 1)]:
                 if self.move(dir):
                     self.last_direction = dir
                     return

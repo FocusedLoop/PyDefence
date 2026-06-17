@@ -4,9 +4,43 @@ from src import debug
 import random as rand
 import time
 
-class game():
+# Hanldes performing tasks and gow to complete the tasks
+# Chose a human from the self.humans list and pass task action into perform_task?
+class tasks:
+    def __init__(self):
+        self.task_queue = []
+        self.working_tasks = []
+
+    def _assign_human(self):
+        if not self.humans: return None
+        return rand.choice(self.humans)
+
+    def add_task_to_global_queue(self, task):
+        self.task_queue.append(task)
+
+    # Drain the global queue each tick, handing each task to a human;
+    # the human carries it out in its own brain() via perform_task.
+    def process_tasks(self):
+        while self.task_queue:
+            human = self._assign_human()
+            if not human:
+                debug.watch("TASK", "No humans available to perform task")
+                return
+            human.add_task(self.task_queue.pop(0))
+    
+    def build(self, human):
+        self.working_tasks.append(("BUILD", human))
+        debug.watch("latest task", f"BUILD by human at {human.xy}")
+        human.interact("PLACE")
+        self.working_tasks.remove(("BUILD", human)) # TODO: ADD LOGIC TO REMOVE FROM QUEUE ONCE TASK IS COMPLETE
+    
+    def destroy(self):
+        pass
+
+
+class game(tasks):
     def __init__(self, world, events_of_day, world_events, tick_rate=0.05, seconds_per_hour=1.0):
-        tasks.__init__(self)
+        super().__init__()
         self.world = world
         self.events_of_day = sorted(events_of_day)
         self.world_events = world_events
@@ -24,6 +58,7 @@ class game():
         now = time.time()
         if now - self.last_tick >= self.tick_rate:
             self.last_tick = now
+            self.process_tasks()
             event = self.pass_world_time(self.tick_rate)
             if event:
                 display.set_brightness(event[1])
@@ -67,39 +102,18 @@ class game():
         for _ in range(count):
             spawn = spawn_location()
             if entity == "enemy":
-                new_enemy = enemy(self.world, spawn)
+                new_enemy = enemy(self.world, self, spawn)
                 self.enemies += [new_enemy]
             elif entity == "human":
-                new_human = human(self.world, spawn)
+                new_human = human(self.world, self, spawn)
                 self.humans += [new_human]
 
         return self.enemies if entity == "enemy" else self.humans
     
-    def perform_task(self, task):
+    def perform_task(self, task, human):
         actions = {
             "BUILD": self.build,
             "DESTROY": self.destroy,
         }
         action = actions.get(task)
-        if action: action()
-
-
-
-
-# Hanldes performing tasks and gow to complete the tasks
-# Chose a human from the self.humans list and pass task action into perform_task?
-class tasks:
-    def __init__(self):
-        pass
-        
-    def _get_human_location(self):
-        pass
-
-    def _assign_human(self):
-        pass
-    
-    def build(self):
-        pass
-    
-    def destroy(self):
-        pass
+        if action: action(human)
